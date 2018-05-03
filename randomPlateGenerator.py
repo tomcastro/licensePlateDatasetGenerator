@@ -1,6 +1,9 @@
+# coding: utf8
+
 # import numpy as np
 import random as r
 import argparse as ap
+from numberToImage import numberToImage
 
 current_supported_letters = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
                              'P', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z']
@@ -24,7 +27,7 @@ def randomPlateGenerator(style='current', reps=1):
                 licensePlate += r.choice(supported_numbers)
 
             # Add dot between two pairs of letters
-            licensePlate = licensePlate[:2] + '·' + licensePlate[2:]
+            licensePlate = licensePlate[:2] + '  ' + licensePlate[2:]
 
             # Add dash between letters and numbers
             licensePlate = licensePlate[:-2] + '-' + licensePlate[-2:]
@@ -37,11 +40,12 @@ def randomPlateGenerator(style='current', reps=1):
                 licensePlate += r.choice(supported_numbers)
 
             # Add dot between letters and numbers
-            licensePlate = licensePlate[:2] + '·' + licensePlate[2:]
+            licensePlate = licensePlate[:2] + ' ' + licensePlate[2:]
 
             # Add dash between two pairs of numbers
             licensePlate = licensePlate[:-2] + '-' + licensePlate[-2:]
 
+        numberToImage(licensePlate, style)
         print(licensePlate)
         lps.append(licensePlate)
 
