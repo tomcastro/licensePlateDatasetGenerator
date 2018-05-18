@@ -1,6 +1,7 @@
 # coding: utf8
 
 # import numpy as np
+import shutil
 import random as r
 import argparse as ap
 from numberToImage import numberToImage
@@ -15,6 +16,10 @@ supported_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 def randomPlateGenerator(style='current', reps=1):
     lps = []
+
+    # Clean data directory
+    shutil.rmtree('data/labels/*')
+    shutil.rmtree('data/images/*')
 
     for i in range(reps):
         licensePlate = ''
@@ -46,7 +51,6 @@ def randomPlateGenerator(style='current', reps=1):
             licensePlate = licensePlate[:-2] + '-' + licensePlate[-2:]
 
         numberToImage(licensePlate, style)
-        print(licensePlate)
         lps.append(licensePlate)
 
     return lps
