@@ -2,6 +2,7 @@
 
 # import numpy as np
 import shutil
+import os
 import random as r
 import argparse as ap
 from numberToImage import numberToImage
@@ -17,9 +18,14 @@ supported_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 def randomPlateGenerator(style='current', reps=1):
     lps = []
 
+    dirpath = os.getcwd()
+
     # Clean data directory
-    shutil.rmtree('data/labels/*')
-    shutil.rmtree('data/images/*')
+    shutil.rmtree(os.path.join(dirpath, 'data', 'labels'))
+    shutil.rmtree(os.path.join(dirpath, 'data', 'images'))
+
+    os.makedirs(os.path.join(dirpath, 'data', 'labels'), exist_ok=True)
+    os.makedirs(os.path.join(dirpath, 'data', 'images'), exist_ok=True)
 
     for i in range(reps):
         licensePlate = ''
