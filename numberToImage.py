@@ -11,7 +11,7 @@ import cv2
 import os
 import copy
 
-r.seed("metricarts2018")
+r.seed("metric-arts2018")
 
 
 def numberToImage(lp, style='current'):
@@ -32,6 +32,7 @@ def numberToImage(lp, style='current'):
     #                          (200, 50, 700, 100))
 
     canvas = randomlyDistortImage(canvas)
+    canvas.show()
     getBoundingBoxes(canvas, lp)
 
     # canvas.show()
@@ -56,11 +57,13 @@ def getBoundingBoxes(img, lp):
     # Convert to TL, TR, BR, BL style and back, and eliminate
     # smaller boxes for letters that contain more than one
     bb[:, 2:] = bb[:, 2:] + bb[:, :2]
-    bb = object_detection.non_max_suppression(bb)
+    bb = object_detection.non_max_suppression(bb, overlapThresh=0.8)
     bb[:, 2:] = bb[:, 2:] - bb[:, :2]
 
     # Sort bounding boxes by X position (left-to-right)
     bb = bb[np.argsort(bb[:, 0])]
+
+    print(bb)
 
     bb_text = str(len(bb)) + '\n'
     lp = ''.join(lp.split())
@@ -105,7 +108,7 @@ def randomlyDistortImage(img):
     img = img.transform((width + 180, height + 65),
                         Image.PERSPECTIVE, coeffs, Image.BICUBIC)
 
-    img = img.filter(ImageFilter.GaussianBlur(r.randint(0, 100)))
+    img = img.filter(ImageFilter.GaussianBlur(r.randint(0, 2)))
 
     return img
 
