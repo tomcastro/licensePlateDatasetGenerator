@@ -16,8 +16,19 @@ r.seed("metric-arts2018")
 
 def numberToImage(lp, style='current'):
 
+    text = ''
+
     # Standard size for Chilean LPs is 360x130
     canvas = Image.new('RGB', (1080, 390), 'white')
+
+    # Mosaic canvas
+    mosaic = Image.new(
+        'RGB',
+        (600, 600),
+        (r.randint(0, 256), r.randint(0, 256), r.randint(0, 256))
+    )
+
+    # mosaic.show()
 
     if(style == 'current'):
         font = ImageFont.truetype('./fonts/cargo2.ttf', 200, encoding='unic')
@@ -28,17 +39,44 @@ def numberToImage(lp, style='current'):
     draw = ImageDraw.Draw(canvas, 'RGBA')
     draw.text((100, 50), lp, 'black', font)
 
+    canvas_cp = copy.deepcopy(canvas)
+    canvas_cp.thumbnail((180, 65))
+
+    mosaic.paste(canvas_cp, (20, 20))
+    text += getBoundingBoxes(canvas_cp, lp, xoffset=20, yoffset=20)
+    # mosaic.show()
+
     # canvas = canvas.transform((1080, 390), Image.EXTENT,
     #                          (200, 50, 700, 100))
 
-    canvas = randomlyDistortImage(canvas)
-    canvas.show()
-    getBoundingBoxes(canvas, lp)
+    canvas_blur, mosaic = blurImage(canvas, mosaic, coords=(300, 20))
+    text += getBoundingBoxes(canvas_cp, lp, xoffset=300, yoffset=20)
+
+    # Repeat four times for different transformations
+
+    for i in range(4):
+        canvas_dist = randomlyDistortImage(canvas)
+        canvas_dist_cp = copy.deepcopy(canvas_dist)
+        canvas_dist_cp.thumbnail((180, 65))
+        mosaic.paste(canvas_dist_cp, (20, 20 + (1+i)*120))
+        text += getBoundingBoxes(canvas_dist_cp, lp, xoffset=20, yoffset=20 + (1+i)*120)
+        canvas_dist_blur, mosaic = blurImage(canvas_dist, mosaic, coords=(300, 20 + (1+i)*120))
+        text += getBoundingBoxes(canvas_dist_cp, lp, xoffset=300, yoffset=20 + (1+i)*120)
+
+    text = "".join([s for s in text.strip().splitlines(True) if s.strip()])
+    text = str(len(text.split('\n'))) + '\n' + text
+
+    # canvas = randomlyDistortImage(canvas)
+    mosaic.show()
+    # canvas.show()
+    # getBoundingBoxes(mosaic, lp)
+
+    writeTextToFile(text, mosaic)
 
     # canvas.show()
 
 
-def getBoundingBoxes(img, lp):
+def getBoundingBoxes(img, lp, xoffset=0, yoffset=0):
 
     cv2_img = np.array(img)
     cv2_original_image = copy.deepcopy(cv2_img)
@@ -63,9 +101,11 @@ def getBoundingBoxes(img, lp):
     # Sort bounding boxes by X position (left-to-right)
     bb = bb[np.argsort(bb[:, 0])]
 
-    print(bb)
+    bb[:, 0] = bb[:, 0] + xoffset
+    bb[:, 1] = bb[:, 1] + yoffset
 
-    bb_text = str(len(bb)) + '\n'
+    # bb_text = str(len(bb)) + '\n'
+    bb_text = ''
     lp = ''.join(lp.split())
 
     for i, box in enumerate(bb):
@@ -73,23 +113,30 @@ def getBoundingBoxes(img, lp):
         bb_text += str(box[0]) + ' ' + str(box[1]) + ' ' + str(box[2]) + ' ' \
             + str(box[3]) + ' ' + lp[i] + '\n'
 
-    print(bb_text)
+    return bb_text
 
+
+def writeTextToFile(text, img):
     # Save label files
     i = 0
     while os.path.exists('data/labels/license_plate_img_%s.txt' % i):
         i += 1
 
     file = open('data/labels/license_plate_img_%s.txt' % i, 'w+')
-    file.write(bb_text)
+    file.write(text)
     file.close()
 
-    cv2.imwrite('data/images/license_plate_img_%s.jpg' % i, cv2_original_image)
+    img.save('data/images/license_plate_img_%s.jpg' % i)
 
-    # plt.subplot(111)
-    # plt.imshow(cv2_img)
 
-    # plt.show()
+def blurImage(img, mosaic, coords):
+
+    img = img.filter(ImageFilter.GaussianBlur(r.randint(0, 4)))
+    blur_cp = copy.deepcopy(img)
+    blur_cp.thumbnail((180, 65))
+    mosaic.paste(blur_cp, coords)
+
+    return img, mosaic
 
 
 def randomlyDistortImage(img):
@@ -99,16 +146,14 @@ def randomlyDistortImage(img):
     # Plane A to plane B (topL, topR, bottomR, bottomL)
     coeffs = find_coeffs(
         [(0, 0), (1080, 0), (1080, 390), (0, 390)],
-        [(r.randint(0, 100), r.randint(0, 50)),
-         (r.randint(1000, 1080), r.randint(0, 50)),
-         (r.randint(900, 1080), r.randint(280, 390)),
-         (r.randint(0, 100), r.randint(250, 390))])
+        [(r.randint(0, 80), r.randint(0, 45)),
+         (r.randint(1000, 1070), r.randint(0, 45)),
+         (r.randint(900, 1070), r.randint(280, 390)),
+         (r.randint(0, 80), r.randint(250, 390))])
 
     # Perspective transform
     img = img.transform((width + 180, height + 65),
                         Image.PERSPECTIVE, coeffs, Image.BICUBIC)
-
-    img = img.filter(ImageFilter.GaussianBlur(r.randint(0, 2)))
 
     return img
 
