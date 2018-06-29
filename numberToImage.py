@@ -10,8 +10,10 @@ import random as r
 import cv2
 import os
 import copy
+import sys
 
-r.seed("metric-arts2018")
+seed = 4338834047466071313
+r.seed(seed)
 
 
 def numberToImage(lp, style='current'):

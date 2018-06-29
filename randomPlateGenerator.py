@@ -21,8 +21,8 @@ def randomPlateGenerator(style='current', reps=1):
     dirpath = os.getcwd()
 
     # Clean data directory
-    shutil.rmtree(os.path.join(dirpath, 'data', 'labels'), ignore_errors=True)
-    shutil.rmtree(os.path.join(dirpath, 'data', 'images'), ignore_errors=True)
+    #shutil.rmtree(os.path.join(dirpath, 'data', 'labels'), ignore_errors=True)
+    #shutil.rmtree(os.path.join(dirpath, 'data', 'images'), ignore_errors=True)
 
     os.makedirs(os.path.join(dirpath, 'data', 'labels'), exist_ok=True)
     os.makedirs(os.path.join(dirpath, 'data', 'images'), exist_ok=True)
